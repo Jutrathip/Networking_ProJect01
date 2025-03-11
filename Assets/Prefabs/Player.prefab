@@ -329,7 +329,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 7482667652216324306, guid: 53391e0a83b591c4cbd77797c48f533e, type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: ae7a5be6b37082f45bab3aae2765fcf3, type: 3}
   m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -665,7 +665,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 7482667652216324306, guid: 53391e0a83b591c4cbd77797c48f533e, type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: ae7a5be6b37082f45bab3aae2765fcf3, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -691,7 +691,7 @@ GameObject:
   - component: {fileID: 5008547494026447573}
   - component: {fileID: -4413787280638634667}
   - component: {fileID: -9133410824970344716}
-  - component: {fileID: 7826716048383638698}
+  - component: {fileID: -3335928948794632921}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -852,7 +852,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   inputReader: {fileID: 11400000, guid: 7a5c40be14829bf4eb7a5f89516b61b4, type: 2}
-  wallet: {fileID: 7826716048383638698}
+  wallet: {fileID: -3335928948794632921}
   projectileSpawnPoint: {fileID: 946691397835802853}
   serverProjectilePrefab: {fileID: 8865491161255033578, guid: 6577b71fe8a62494bac71a8a67d3bd9e, type: 3}
   clientProjectilePrefab: {fileID: 6903251838842013203, guid: 8150a817925f64f4b9506960230bfacd, type: 3}
@@ -861,7 +861,7 @@ MonoBehaviour:
   projectileSpeed: 30
   fireRate: 0.75
   muzzleFlashDuration: 0.075
-  costToFire: 0
+  costToFire: 5
 --- !u!114 &-9133410824970344716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -878,7 +878,7 @@ MonoBehaviour:
   CurrentHealth:
     m_InternalValue: 0
   <MaxHealth>k__BackingField: 100
---- !u!114 &7826716048383638698
+--- !u!114 &-3335928948794632921
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -887,7 +887,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7330259741333480330}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 148a20b074c37664e976fade88d76b8e, type: 3}
+  m_Script: {fileID: 11500000, guid: 53836c5e021a37f45b380b2e1223a669, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
