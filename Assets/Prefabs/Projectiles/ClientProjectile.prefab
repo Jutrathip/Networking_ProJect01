@@ -139,10 +139,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: ClientProjectile
       objectReference: {fileID: 0}
-    - target: {fileID: 9057531522519607997, guid: 4bd2364dd5a6b36479ce084703b445ee, type: 3}
-      propertyPath: m_TagString
-      value: PlayerBullet
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
