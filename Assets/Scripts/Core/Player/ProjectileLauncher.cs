@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class ProjectileLauncher : NetworkBehaviour
 {
@@ -11,18 +12,18 @@ public class ProjectileLauncher : NetworkBehaviour
     [SerializeField] private GameObject clientProjectilePrefab;
     [SerializeField] private GameObject muzzleFlash;
     [SerializeField] private Collider2D playerCollider;
+    [SerializeField] private int costToFire;
 
     [Header("Settings")]
     [SerializeField] private float projectileSpeed;
     [SerializeField] private float fireRate;
     [SerializeField] private float muzzleFlashDuration;
-    [SerializeField] private int costToFire;
 
+    private bool isPointerOverUI;
     private bool shouldFire;
     //private float previousFireTime;
-    private float timer;
     private float muzzleFlashTimer;
-
+    private float timer;
     public override void OnNetworkSpawn()
     {
         if (!IsOwner) { return; }
@@ -40,44 +41,56 @@ public class ProjectileLauncher : NetworkBehaviour
     private void Update()
     {
         if (muzzleFlashTimer > 0f)
-        {
+        { 
             muzzleFlashTimer -= Time.deltaTime;
 
-            if (muzzleFlashTimer <= 0f)
-            {
+            if (muzzleFlashTimer <= 0f) 
+            { 
                 muzzleFlash.SetActive(false);
             }
         }
+
         if (!IsOwner) { return; }
+        isPointerOverUI = EventSystem.current.IsPointerOverGameObject();
 
         if (timer > 0)
         {
             timer -= Time.deltaTime;
         }
-        if (!shouldFire) { return; }
-        
-        if(timer>0) {return;}
 
-        if(wallet.TotalCoins.Value < costToFire) {return;}
-        
+        if (wallet.TotalCoins.Value < costToFire)
+        {
+            return;
+        }
+
+
+
+        if (!shouldFire) { return; }
+
+        if(timer > 0) { return; }
+
         PrimaryFireServerRpc(projectileSpawnPoint.position, projectileSpawnPoint.up);
         SpawnDummyProjectile(projectileSpawnPoint.position, projectileSpawnPoint.up);
 
-        timer = 1/fireRate;
+        timer = 1 / fireRate;
     }
-
+        
     private void HandlePrimaryFire(bool shouldFire)
     {
+        if (shouldFire)
+        {
+            if (isPointerOverUI) { return; }
+        }
         this.shouldFire = shouldFire;
     }
 
     [Rpc(SendTo.Server)]
     private void PrimaryFireServerRpc(Vector3 spawnPos, Vector3 direction)
     {
-        if(wallet.TotalCoins.Value < costToFire) {return;}
+        if (wallet.TotalCoins.Value < costToFire) { return; }
 
         wallet.SpendCoins(costToFire);
-        
+
         GameObject projectileInstance = Instantiate(
             serverProjectilePrefab,
             spawnPos,
@@ -86,16 +99,16 @@ public class ProjectileLauncher : NetworkBehaviour
         projectileInstance.transform.up = direction;
         Physics2D.IgnoreCollision(playerCollider,projectileInstance.GetComponent<Collider2D>());
 
-        if (projectileInstance.TryGetComponent<DealDamageOnContact>(out DealDamageOnContact dealDamage))
+        if(projectileInstance.TryGetComponent<DealDamageOnContact>(out DealDamageOnContact dealDamage))
         {
             dealDamage.SetOwner(OwnerClientId);
         }
-        
-        if (projectileInstance.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
+
+        if(projectileInstance.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
         {
             rb.linearVelocity = rb.transform.up * projectileSpeed;
         }
-        
+
         SpawnDummyProjectileClientRpc(spawnPos, direction);
     }
 
@@ -111,14 +124,15 @@ public class ProjectileLauncher : NetworkBehaviour
     {
         muzzleFlash.SetActive(true);
         muzzleFlashTimer = muzzleFlashDuration;
+
         GameObject projectileInstance = Instantiate(
             clientProjectilePrefab,
             spawnPos,
             Quaternion.identity);
 
         projectileInstance.transform.up = direction;
-        
-        Physics2D.IgnoreCollision(playerCollider,projectileInstance.GetComponent<Collider2D>());
+
+        Physics2D.IgnoreCollision(playerCollider, projectileInstance.GetComponent<Collider2D>());
 
         if (projectileInstance.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
         {
