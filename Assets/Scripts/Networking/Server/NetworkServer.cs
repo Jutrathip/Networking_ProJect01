@@ -8,7 +8,6 @@ public class NetworkServer : IDisposable
 {
     private NetworkManager networkManager;
     private NetworkObject playerPrefab;
-
     public Action<string> OnClientLeft;
 
     private Dictionary<ulong,string> clientIdToAuth = new Dictionary<ulong,string>();
@@ -18,7 +17,7 @@ public class NetworkServer : IDisposable
     {
         this.networkManager = networkManager;
         this.playerPrefab = playerPrefab;
-
+        
         networkManager.ConnectionApprovalCallback += ApprovalCheck;
         networkManager.OnServerStarted += OnNetworkReady;
     }
@@ -49,7 +48,7 @@ public class NetworkServer : IDisposable
         authIdToUserData[userData.userAuthId] = userData;
 
         _ = SpawnPlayerDelayed(request.ClientNetworkId);
-
+        
         response.Approved = true;
         response.CreatePlayerObject = false;
     }
@@ -63,8 +62,6 @@ public class NetworkServer : IDisposable
 
         playerInstance.SpawnAsPlayerObject(clientId);
     }
-    
-
     public UserData GetUserDataByClientId(ulong clientId)
     {
         if(clientIdToAuth.TryGetValue(clientId,out string authId))
@@ -77,10 +74,9 @@ public class NetworkServer : IDisposable
         }
         return null;
     }
-
-    public void Dispose() 
-    { 
-        if(networkManager == null) { return; }
+    public void Dispose()
+    {
+        if(networkManager == null) {return;}
 
         networkManager.ConnectionApprovalCallback -= ApprovalCheck;
         networkManager.OnClientDisconnectCallback -= OnClientDisconnect;

@@ -5191,7 +5191,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 7482667652216324306, guid: eab2f96ccb44f6e438da586e10e4fdcf, type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 579e81d8ff0672c44aac378fd756c62d, type: 3}
   m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10607,7 +10607,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 7482667652216324306, guid: eab2f96ccb44f6e438da586e10e4fdcf, type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 579e81d8ff0672c44aac378fd756c62d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10893,10 +10893,10 @@ MonoBehaviour:
   clientProjectilePrefab: {fileID: 6903251838842013203, guid: 8150a817925f64f4b9506960230bfacd, type: 3}
   muzzleFlash: {fileID: 8418843961842889739}
   playerCollider: {fileID: 2588595059896673874}
+  costToFire: 5
   projectileSpeed: 30
   fireRate: 0.75
   muzzleFlashDuration: 0.075
-  costToFire: 5
 --- !u!114 &-9133410824970344716
 MonoBehaviour:
   m_ObjectHideFlags: 0

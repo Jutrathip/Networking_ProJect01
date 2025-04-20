@@ -8,7 +8,7 @@ public class Leaderboard : NetworkBehaviour
     [SerializeField] private Transform leaderboardEntityHolder;
     [SerializeField] private LeaderboardEntityDisplay leaderboardEntityPrefab;
     [SerializeField] private int entitiesToDisplay = 8;
-
+    
     private NetworkList<LeaderboardEntityState> leaderboardEntities;
     private List<LeaderboardEntityDisplay> entityDisplays = new List<LeaderboardEntityDisplay>();
 
@@ -49,8 +49,7 @@ public class Leaderboard : NetworkBehaviour
 
     private void HandlePlayerDespawned(TankPlayer player)
     {
-        if(NetworkManager.ShutdownInProgress) { return; }
-
+        if(NetworkManager.ShutdownInProgress) {return;}
         foreach(LeaderboardEntityState entity in leaderboardEntities)
         {
             if(entity.ClientId != player.OwnerClientId) { continue; }
@@ -106,8 +105,7 @@ public class Leaderboard : NetworkBehaviour
 
     private void HandleLeaderboardEntitiesChanged(NetworkListEvent<LeaderboardEntityState> changeEvent)
     {
-        if(!gameObject.scene.isLoaded) { return; }
-
+        if(!gameObject.scene.isLoaded) {return;}
         switch (changeEvent.Type)
         {
             case NetworkListEvent<LeaderboardEntityState>.EventType.Add:
@@ -143,26 +141,28 @@ public class Leaderboard : NetworkBehaviour
                 }
                 break;
         }
+        
+        entityDisplays.Sort((x,y)=> y.Coins.CompareTo(x.Coins));
 
-        entityDisplays.Sort((x, y) => y.Coins.CompareTo(x.Coins));
-
-        for(int i = 0; i < entityDisplays.Count; i++)
+        for (int i = 0; i < entityDisplays.Count; i++)
         {
             entityDisplays[i].transform.SetSiblingIndex(i);
             entityDisplays[i].UpdateText();
-            entityDisplays[i].gameObject.SetActive(i <= entitiesToDisplay - 1);
+            entityDisplays[i].gameObject.SetActive(i<=entitiesToDisplay-1);
         }
 
         LeaderboardEntityDisplay myDisplay =
             entityDisplays.FirstOrDefault(x => x.CliendId == NetworkManager.Singleton.LocalClientId);
 
-        if(myDisplay != null)
+        if (myDisplay != null)
         {
-            if(myDisplay.transform.GetSiblingIndex() >= entitiesToDisplay)
+            if (myDisplay.transform.GetSiblingIndex() >= entitiesToDisplay)
             {
-                leaderboardEntityHolder.GetChild(entitiesToDisplay - 1).gameObject.SetActive(false);
+                leaderboardEntityHolder.GetChild(entitiesToDisplay-1).gameObject.SetActive(false);
                 myDisplay.gameObject.SetActive(true);
             }
         }
     }
+
+    
 }
