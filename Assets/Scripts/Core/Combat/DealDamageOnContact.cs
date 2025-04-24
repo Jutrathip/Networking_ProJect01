@@ -5,6 +5,7 @@ using UnityEngine;
 public class DealDamageOnContact : MonoBehaviour
 {
     [SerializeField] private int damage = 5;
+    [SerializeField] private float damageAmount = 10f;
 
     private ulong ownerClientId;
 
@@ -27,6 +28,22 @@ public class DealDamageOnContact : MonoBehaviour
         if (col.attachedRigidbody.TryGetComponent<Health>(out Health health))
         {
             health.TakeDamage(damage);
+        }
+
+        if (col.TryGetComponent(out DestructibleWall2D wall))
+        {
+            wall.TakeDamage(damageAmount); // กำหนดค่า damageAmount ในกระสุน
+        }
+
+        if (col.TryGetComponent(out EnemyHealth enemy))
+        {
+            enemy.TakeDamage(damage);
+            Destroy(gameObject);
+        }
+        if (col.TryGetComponent(out BaseHealth baseHealth))
+        {
+            baseHealth.TakeDamage(damage);
+            Destroy(gameObject);
         }
     }
 }
