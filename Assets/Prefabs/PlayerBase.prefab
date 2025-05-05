@@ -148,4 +148,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseType: 0
+  gameOverPanelPrefab: {fileID: 4587296899466127347, guid: 241c7d90da39734429dbc5e5f9dabec3, type: 3}
+  gameWinPanelPrefab: {fileID: 0}
   maxHealth: 1
