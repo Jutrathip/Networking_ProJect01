@@ -181,13 +181,12 @@ MonoBehaviour:
   firePoint: {fileID: 4261025012849937350}
   bulletPrefab: {fileID: 3867851437788515087, guid: 57aef7ac4e677f74da517d13b556af4c, type: 3}
   speed: 0.5
-  bulletSpeed: 10
   fireRate: 1
   chaseDistance: 100
-  attackDistance: 1
+  attackDistance: 10
   obstructionMask:
     serializedVersion: 2
-    m_Bits: 1032
+    m_Bits: 1
 --- !u!114 &5043583109378437788
 MonoBehaviour:
   m_ObjectHideFlags: 0
