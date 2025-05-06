@@ -23,34 +23,38 @@ public class EnemySpawner : MonoBehaviour
         // รอให้เกมโหลดฉาก และสั่ง Spawn ครั้งแรก (ไม่บังคับ)
         yield return new WaitForSeconds(1f);
 
-        // วนไม่รู้จบ (คุณสามารถปรับเงื่อนไขให้หยุดได้)
         while (true)
         {
-            SpawnEnemy();
+            SpawnAllEnemies();
             yield return new WaitForSeconds(spawnInterval);
         }
     }
 
-    void SpawnEnemy()
+    /// <summary>
+    /// สร้าง Enemy ที่ทุกตำแหน่งใน spawnPoints
+    /// </summary>
+    void SpawnAllEnemies()
     {
-        // เลือกตำแหน่งสุ่ม (ถ้ามีหลายจุด)
-        Vector3 spawnPos;
-        Quaternion spawnRot = Quaternion.identity;
-
         if (spawnPoints != null && spawnPoints.Length > 0)
         {
-            int idx = Random.Range(0, spawnPoints.Length);
-            spawnPos = spawnPoints[idx].position;
-            spawnRot = spawnPoints[idx].rotation;
+            // วนลูปทุกจุด
+            foreach (var point in spawnPoints)
+            {
+                Instantiate(
+                    enemyPrefab,
+                    point.position,
+                    point.rotation
+                );
+            }
         }
         else
         {
-            // ไม่มีจุด Spawn เพิ่ม เติม ก็ใช้ตำแหน่งของ Spawner
-            spawnPos = transform.position;
-            spawnRot = transform.rotation;
+            // ถ้าไม่มี spawnPoints ให้ Spawn ที่ตำแหน่งของ Spawner แทน
+            Instantiate(
+                enemyPrefab,
+                transform.position,
+                transform.rotation
+            );
         }
-
-        // สร้าง Enemy ขึ้นมา
-        Instantiate(enemyPrefab, spawnPos, spawnRot);
     }
 }

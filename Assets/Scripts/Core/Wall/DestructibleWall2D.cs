@@ -15,7 +15,7 @@ public class DestructibleWall2D : MonoBehaviour
         currentHealth -= damage;
         if (currentHealth <= 0f)
         {
-            Destroy(gameObject); // พังกำแพง
+            Destroy(gameObject);
         }
     }
 }
