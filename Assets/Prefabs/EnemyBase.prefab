@@ -78,8 +78,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.6509434, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 1759741404, guid: 7a9fb400cf7835046995a00dd01056fb, type: 3}
+  m_Color: {r: 1, g: 0.3726415, b: 0.3726415, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -150,4 +150,4 @@ MonoBehaviour:
   baseType: 1
   gameOverPanelPrefab: {fileID: 0}
   gameWinPanelPrefab: {fileID: 6413059226519813319, guid: 372392ffd27462842aff60a1a3440825, type: 3}
-  maxHealth: 1
+  maxHealth: 200

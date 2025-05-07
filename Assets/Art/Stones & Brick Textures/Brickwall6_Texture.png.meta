@@ -199,7 +199,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Brickwall6_Texture_0: -7717834642461104837
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

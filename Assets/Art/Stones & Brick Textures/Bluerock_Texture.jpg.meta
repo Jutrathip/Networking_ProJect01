@@ -199,7 +199,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Bluerock_Texture_0: 404059472869772355
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

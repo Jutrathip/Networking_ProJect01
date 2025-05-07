@@ -199,7 +199,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Darkmetal_Texture_0: 1377393068830569609
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
