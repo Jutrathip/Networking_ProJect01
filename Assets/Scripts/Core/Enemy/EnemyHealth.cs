@@ -1,28 +1,51 @@
+// EnemyHealth.cs
 using UnityEngine;
+using Unity.Netcode;
 
-public class EnemyHealth : MonoBehaviour
+[RequireComponent(typeof(NetworkObject))]
+public class EnemyHealth : NetworkBehaviour
 {
+    [Header("ค่าพลังชีวิตสูงสุด")]
     [SerializeField] private float maxHealth = 30f;
-    private float currentHealth;
 
-    void Start()
+    private NetworkVariable<float> currentHealth = new NetworkVariable<float>(
+        0f,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
+    public override void OnNetworkSpawn()
     {
-        currentHealth = maxHealth;
+        if (IsServer)
+            currentHealth.Value = maxHealth;
     }
 
+    /// <summary>เรียกเพื่อทำดาเมจ</summary>
     public void TakeDamage(float damage)
     {
-        currentHealth -= damage;
-
-        if (currentHealth <= 0f)
-        {
-            Die();
-        }
+        if (IsServer)
+            ApplyDamage(damage);
+        else
+            TakeDamageServerRpc(damage);
     }
 
-    void Die()
+    [ServerRpc(RequireOwnership = false)]
+    private void TakeDamageServerRpc(float damage)
     {
-        Destroy(gameObject);
-        // เพิ่มเอฟเฟกต์/คะแนน/เสียงได้ที่นี่
+        ApplyDamage(damage);
+    }
+
+    private void ApplyDamage(float damage)
+    {
+        currentHealth.Value -= damage;
+        if (currentHealth.Value <= 0f)
+            Die();
+    }
+
+    private void Die()
+    {
+        // Server/Host เป็นคนเดียวที่ despawn
+        GetComponent<NetworkObject>().Despawn(destroy: true);
+        // (เพิ่มเอฟเฟกต์หรือคะแนนได้ที่นี่)
     }
 }

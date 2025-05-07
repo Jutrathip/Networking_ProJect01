@@ -1,8 +1,10 @@
 using UnityEngine;
+using Unity.Netcode;
 
-public class BaseSpawner : MonoBehaviour
+[RequireComponent(typeof(NetworkObject))]
+public class BaseSpawner : NetworkBehaviour
 {
-    [Header("Prefab ของฐาน")]
+    [Header("Prefab ของฐาน (ต้องมี NetworkObject)")]
     public GameObject playerBasePrefab;
     public GameObject enemyBasePrefab;
 
@@ -12,12 +14,12 @@ public class BaseSpawner : MonoBehaviour
     [Header("ตำแหน่งสุ่มของ Enemy Base")]
     public Transform[] enemySpawnPoints;
 
-    void Start()
+    public override void OnNetworkSpawn()
     {
-        // สปอนน์ Player Base
-        SpawnOne(playerBasePrefab, playerSpawnPoints);
+        // ให้รันเฉพาะฝั่ง Server (รวม Host) เท่านั้น
+        if (!IsServer) return;
 
-        // สปอนน์ Enemy Base
+        SpawnOne(playerBasePrefab, playerSpawnPoints);
         SpawnOne(enemyBasePrefab, enemySpawnPoints);
     }
 
@@ -32,6 +34,18 @@ public class BaseSpawner : MonoBehaviour
         int idx = Random.Range(0, points.Length);
         Transform chosen = points[idx];
 
-        Instantiate(prefab, chosen.position, chosen.rotation);
+        // สร้างบน Server
+        GameObject instance = Instantiate(prefab, chosen.position, chosen.rotation);
+
+        // สั่ง Netcode spawn ให้ทุก Client เห็นด้วย
+        var netObj = instance.GetComponent<NetworkObject>();
+        if (netObj != null)
+        {
+            netObj.Spawn();
+        }
+        else
+        {
+            Debug.LogError($"Prefab {prefab.name} ไม่มีคอมโพเนนต์ NetworkObject!");
+        }
     }
 }

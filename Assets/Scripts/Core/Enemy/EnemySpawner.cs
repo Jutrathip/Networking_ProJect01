@@ -1,9 +1,11 @@
-using System.Collections;
 using UnityEngine;
+using Unity.Netcode;
+using System.Collections;
 
-public class EnemySpawner : MonoBehaviour
+[RequireComponent(typeof(NetworkObject))]
+public class EnemySpawner : NetworkBehaviour
 {
-    [Header("Prefab ของ Enemy ที่จะ Spawn")]
+    [Header("Prefab ของ Enemy ที่จะ Spawn (ต้องมี NetworkObject)")]
     public GameObject enemyPrefab;
 
     [Header("ตำแหน่งที่จะใช้ Spawn (หากปล่อยว่าง จะ Spawn ที่ตำแหน่ง Spawner)")]
@@ -12,15 +14,16 @@ public class EnemySpawner : MonoBehaviour
     [Header("เวลาที่จะเว้นระหว่างการ Spawn แต่ละครั้ง (วินาที)")]
     public float spawnInterval = 5f;
 
-    void Start()
+    public override void OnNetworkSpawn()
     {
-        // เริ่ม Coroutine ให้มันวน Spawn เป็นระยะ ๆ
+        // ให้ Server/Host เริ่ม Coroutine สปอนน์ศัตรู
+        if (!IsServer) return;
         StartCoroutine(SpawnRoutine());
     }
 
-    IEnumerator SpawnRoutine()
+    private IEnumerator SpawnRoutine()
     {
-        // รอให้เกมโหลดฉาก และสั่ง Spawn ครั้งแรก (ไม่บังคับ)
+        // รอ 1 วินาที ก่อนสปอนน์ครั้งแรก
         yield return new WaitForSeconds(1f);
 
         while (true)
@@ -30,31 +33,41 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// สร้าง Enemy ที่ทุกตำแหน่งใน spawnPoints
-    /// </summary>
-    void SpawnAllEnemies()
+    private void SpawnAllEnemies()
     {
+        if (enemyPrefab == null)
+        {
+            Debug.LogWarning("ไม่มี Prefab ของ Enemy กำหนดใน Inspector");
+            return;
+        }
+
         if (spawnPoints != null && spawnPoints.Length > 0)
         {
-            // วนลูปทุกจุด
             foreach (var point in spawnPoints)
             {
-                Instantiate(
-                    enemyPrefab,
-                    point.position,
-                    point.rotation
-                );
+                SpawnEnemyAt(point.position, point.rotation);
             }
         }
         else
         {
-            // ถ้าไม่มี spawnPoints ให้ Spawn ที่ตำแหน่งของ Spawner แทน
-            Instantiate(
-                enemyPrefab,
-                transform.position,
-                transform.rotation
-            );
+            // ไม่มีจุดสปอนน์ ให้ใช้ตำแหน่งของตัว Spawner
+            SpawnEnemyAt(transform.position, transform.rotation);
+        }
+    }
+
+    private void SpawnEnemyAt(Vector3 position, Quaternion rotation)
+    {
+        // สร้างบน Server
+        var instance = Instantiate(enemyPrefab, position, rotation);
+        var netObj = instance.GetComponent<NetworkObject>();
+        if (netObj != null)
+        {
+            netObj.Spawn();  // replicate ให้ Clients ทราบ
+        }
+        else
+        {
+            Debug.LogError($"Enemy prefab '{enemyPrefab.name}' ไม่มีคอมโพเนนต์ NetworkObject!");
+            Destroy(instance);
         }
     }
 }

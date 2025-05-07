@@ -12,8 +12,10 @@ GameObject:
   - component: {fileID: 7774058546364448430}
   - component: {fileID: 325660595881408182}
   - component: {fileID: 6179748048782435587}
+  - component: {fileID: 194027410072713388}
   - component: {fileID: 8242754986685928129}
   - component: {fileID: 5043583109378437788}
+  - component: {fileID: 6177436057723868885}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -165,6 +167,31 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &194027410072713388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3342242914272463284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 443734157
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &8242754986685928129
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,6 +204,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1f5976f76f79a14fb4c00641c81fdb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   target: {fileID: 7562411460437626944, guid: f8fd3d8673a9e754b90645e1f7cf97c9, type: 3}
   firePoint: {fileID: 4261025012849937350}
   bulletPrefab: {fileID: 3867851437788515087, guid: 57aef7ac4e677f74da517d13b556af4c, type: 3}
@@ -184,7 +212,7 @@ MonoBehaviour:
   bulletSpeed: 20
   fireRate: 0.5
   chaseDistance: 1000
-  attackDistance: 10
+  attackDistance: 7
 --- !u!114 &5043583109378437788
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,7 +225,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2212b7208f2c8b94182dba5b7713d575, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 30
+--- !u!114 &6177436057723868885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3342242914272463284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &9093296622504909956
 GameObject:
   m_ObjectHideFlags: 0

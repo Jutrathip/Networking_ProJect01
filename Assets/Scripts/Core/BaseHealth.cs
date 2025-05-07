@@ -1,109 +1,74 @@
+// Scripts/Core/BaseHealth.cs
 using UnityEngine;
+using Unity.Netcode;
 
-public class BaseHealth : MonoBehaviour
+public class BaseHealth : NetworkBehaviour
 {
     public enum BaseType { Player, Enemy }
     public BaseType baseType;
 
-    [Header("ลาก Prefab ของ Game Over Panel")]
+    [Header("ลาก Prefab หรือ Scene Panel ลง Inspector")]
     public GameObject gameOverPanelPrefab;
-
-    [Header("ลาก Prefab ของ Game Win Panel")]
     public GameObject gameWinPanelPrefab;
-
-    private GameObject gameOverPanelInstance;
-    private GameObject gameWinPanelInstance;
 
     [Header("ค่าพลังชีวิตสูงสุด")]
     public float maxHealth = 50f;
-    private float currentHealth;
 
-    void Start()
+    // Server เป็นผู้เขียนค่าพลังชีวิตเท่านั้น
+    private NetworkVariable<float> currentHealth = new NetworkVariable<float>(
+        /* initialValue */        0f,
+        /* readPerm */            NetworkVariableReadPermission.Everyone,
+        /* writePerm */           NetworkVariableWritePermission.Server
+    );
+
+    public override void OnNetworkSpawn()
     {
-        // เซ็ตพลังชีวิตเริ่มต้น
-        currentHealth = maxHealth;
-        Time.timeScale = 1f;
-
-        // หา Canvas แรกใน Scene
-        Canvas mainCanvas = FindObjectOfType<Canvas>();
-        if (mainCanvas == null)
-            Debug.LogError("ไม่พบ Canvas ใน Scene กรุณาใส่ Canvas ไว้ใน Hierarchy");
-
-        // สปอนน์ Game Over Panel จาก Prefab ลงใต้ Canvas
-        if (gameOverPanelPrefab != null && mainCanvas != null)
+        if (IsServer)
         {
-            gameOverPanelInstance = Instantiate(
-                gameOverPanelPrefab,
-                mainCanvas.transform,  // parent ให้เป็น Canvas
-                worldPositionStays: false
-            );
-            // ขยายให้เต็มหน้าจอ
-            var rt = gameOverPanelInstance.GetComponent<RectTransform>();
-            if (rt != null)
-            {
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.anchoredPosition = Vector2.zero;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-            }
-            gameOverPanelInstance.SetActive(false);
+            // บน Server ตั้งค่าเริ่มต้น
+            currentHealth.Value = maxHealth;
         }
-
-        // สปอนน์ Game Win Panel จาก Prefab ลงใต้ Canvas
-        if (gameWinPanelPrefab != null && mainCanvas != null)
-        {
-            gameWinPanelInstance = Instantiate(
-                gameWinPanelPrefab,
-                mainCanvas.transform,
-                worldPositionStays: false
-            );
-            var rt = gameWinPanelInstance.GetComponent<RectTransform>();
-            if (rt != null)
-            {
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.anchoredPosition = Vector2.zero;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-            }
-            gameWinPanelInstance.SetActive(false);
-        }
+        // Panels จะ instantiate ใน UIManager
     }
 
     /// <summary>
-    /// เรียกเมื่อต้องการให้ฐานได้รับความเสียหาย
+    /// External calls (เช่น จากกระสุน) ให้เรียกเมธอดนี้เสมอ
     /// </summary>
     public void TakeDamage(float damage)
     {
-        currentHealth -= damage;
-        if (currentHealth <= 0f)
-            Die();
+        // ให้ Server เป็นคนคำนวณเท่านั้น
+        if (IsServer)
+            ApplyDamage(damage);
+        else
+            TakeDamageServerRpc(damage);
     }
 
-    /// <summary>
-    /// เรียกเมื่อฐานถูกทำลาย
-    /// </summary>
-    void Die()
+    [ServerRpc(RequireOwnership = false)]
+    private void TakeDamageServerRpc(float damage)
     {
-        // หยุดเกม
-        Time.timeScale = 0f;
+        ApplyDamage(damage);
+    }
 
-        if (baseType == BaseType.Player)
+    private void ApplyDamage(float damage)
+    {
+        currentHealth.Value -= damage;
+        if (currentHealth.Value <= 0f)
         {
-            if (gameOverPanelInstance != null)
-                gameOverPanelInstance.SetActive(true);
-            else
-                Debug.LogWarning("ยังไม่ได้เซ็ต GameOverPanel Prefab ใน Inspector");
+            HandleDie();
         }
-        else // Enemy
-        {
-            if (gameWinPanelInstance != null)
-                gameWinPanelInstance.SetActive(true);
-            else
-                Debug.LogWarning("ยังไม่ได้เซ็ต GameWinPanel Prefab ใน Inspector");
-        }
+    }
 
-        Destroy(gameObject);
+    private void HandleDie()
+    {
+        // บน Server สั่งให้ UIManager แสดง
+        if (UIManager.Instance != null)
+        {
+            if (baseType == BaseType.Player)
+                UIManager.Instance.ShowGameOver();
+            else
+                UIManager.Instance.ShowGameWin();
+        }
+        // Despawn ตัวฐานบน Server → replicate ไปทุก Client
+        GetComponent<NetworkObject>().Despawn(destroy: true);
     }
 }
