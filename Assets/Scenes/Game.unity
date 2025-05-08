@@ -1886,7 +1886,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &297037317
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3098,7 +3098,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 794f1da0cd8e6834cb6deac081504abb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeRemaining: 210
+  timeRemaining: 300
   countdownText: {fileID: 466249067}
   gameOverPanel: {fileID: 4587296899466127347, guid: 241c7d90da39734429dbc5e5f9dabec3, type: 3}
 --- !u!4 &485354985

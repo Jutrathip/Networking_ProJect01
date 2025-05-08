@@ -7,7 +7,7 @@ public class DestructibleWall2D : NetworkBehaviour
     [Header("ค่าพลังชีวิตสูงสุดของกำแพง")]
     [SerializeField] private float maxHealth = 50f;
 
-    // เก็บ HP บน Network; Server เขียน, Client อ่าน
+    // Server เป็นผู้เขียนค่าเดียว
     private NetworkVariable<float> currentHealth = new NetworkVariable<float>(
         0f,
         NetworkVariableReadPermission.Everyone,
@@ -16,7 +16,6 @@ public class DestructibleWall2D : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        // บน Server ตั้งค่า HP เริ่มต้น
         if (IsServer)
         {
             currentHealth.Value = maxHealth;
@@ -24,11 +23,10 @@ public class DestructibleWall2D : NetworkBehaviour
     }
 
     /// <summary>
-    /// เรียกเมื่อต้องการทำดาเมจกำแพง
+    /// เรียกเพื่อหักเลือด กำแพงจะถูกทำลายทั้งฝั่ง Host/Client
     /// </summary>
     public void TakeDamage(float damage)
     {
-        // ทุกคนเรียก RPC ให้ Server หัก HP
         if (IsServer)
         {
             ApplyDamage(damage);
@@ -45,14 +43,22 @@ public class DestructibleWall2D : NetworkBehaviour
         ApplyDamage(damage);
     }
 
-    // ทำงานบน Server เท่านั้น
     private void ApplyDamage(float damage)
     {
         currentHealth.Value -= damage;
         if (currentHealth.Value <= 0f)
         {
-            // Server/Host เป็นคนเดียวที่ despawn
-            GetComponent<NetworkObject>().Despawn(destroy: true);
+            // ถ้าเป็นวัตถุ Netcode (Spawned) ให้ใช้ Despawn
+            var netObj = GetComponent<NetworkObject>();
+            if (netObj != null && netObj.IsSpawned)
+            {
+                netObj.Despawn(destroy: true);
+            }
+            else
+            {
+                // มิฉะนั้นก็ใช้ Destroy ธรรมดา
+                Destroy(gameObject);
+            }
         }
     }
 }

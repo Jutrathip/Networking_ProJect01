@@ -1,4 +1,3 @@
-// EnemyAIWithState.cs
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Components;
@@ -9,13 +8,10 @@ public enum EnemyState { Idle, Chase, AttackWall, AttackBase }
 [RequireComponent(typeof(NetworkObject), typeof(NetworkTransform), typeof(Rigidbody2D))]
 public class EnemyAIWithState : NetworkBehaviour
 {
-    [Header("Target Base (use Tag 'PlayerBase')")]
-    public Transform target;
-
     [Header("Fire Point")]
     public Transform firePoint;
 
-    [Header("Bullet Prefab (must have NetworkObject)")]
+    [Header("Bullet Prefab (must have NetworkObject & NetworkTransform)")]
     public GameObject bulletPrefab;
 
     [Header("Movement speed")]
@@ -37,38 +33,51 @@ public class EnemyAIWithState : NetworkBehaviour
     private EnemyState currentState = EnemyState.Idle;
     private float fireCooldown;
 
+    // เก็บฐานทั้งหมด (Tag = "PlayerBase")
+    private List<Transform> baseTargets = new List<Transform>();
+    private Transform currentTarget;
+
     public override void OnNetworkSpawn()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.bodyType = RigidbodyType2D.Dynamic;
 
-        // Only the server assigns the target
-        if (IsServer && target == null)
+        if (IsServer)
         {
-            var go = GameObject.FindGameObjectWithTag("PlayerBase");
-            if (go != null) target = go.transform;
+            // หา PlayerBase ทุกตัวในฉาก
+            var gos = GameObject.FindGameObjectsWithTag("PlayerBase");
+            foreach (var go in gos)
+                baseTargets.Add(go.transform);
+            ChooseNearestBase();
         }
     }
 
-    void Update()
+    private void Update()
     {
-        // Only run AI on server/host
-        if (!IsServer || target == null)
+        // AI รันเฉพาะบน Server/Host
+        if (!IsServer)
             return;
 
-        Vector2 pos = rb.position;
-        Vector2 toTarget = ((Vector2)target.position - pos);
-        float dist = toTarget.magnitude;
-        Vector2 dir = toTarget.normalized;
+        // ไม่มี target ให้หยุด
+        if (currentTarget == null)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
 
-        // Raycast for walls between firePoint and target
-        RaycastHit2D[] hits = Physics2D.RaycastAll(firePoint.position, dir, dist);
+        Vector2 pos = rb.position;
+        Vector2 toBase = (Vector2)currentTarget.position - pos;
+        float distToBase = toBase.magnitude;
+        Vector2 dirToBase = toBase.normalized;
+
+        // Raycast หาเฉพาะกำแพงในระยะ attackDistance
+        RaycastHit2D[] hits = Physics2D.RaycastAll(firePoint.position, dirToBase, attackDistance);
         bool wallBlocked = false;
         RaycastHit2D nearestWall = default;
         float nearestDist = float.MaxValue;
         foreach (var h in hits)
         {
-            if (h.collider != null && h.collider.TryGetComponent<DestructibleWall2D>(out _)
+            if (h.collider != null && h.collider.TryGetComponent<DestructibleWall2D>(out _) 
                 && h.distance < nearestDist)
             {
                 nearestDist = h.distance;
@@ -77,13 +86,17 @@ public class EnemyAIWithState : NetworkBehaviour
             }
         }
 
-        // Choose state
-        if (dist > chaseDistance) currentState = EnemyState.Idle;
-        else if (wallBlocked && nearestDist <= attackDistance) currentState = EnemyState.AttackWall;
-        else if (dist > attackDistance) currentState = EnemyState.Chase;
-        else currentState = EnemyState.AttackBase;
+        // เลือก state
+        if (distToBase > chaseDistance)
+            currentState = EnemyState.Idle;
+        else if (wallBlocked)
+            currentState = EnemyState.AttackWall;
+        else if (distToBase > attackDistance)
+            currentState = EnemyState.Chase;
+        else
+            currentState = EnemyState.AttackBase;
 
-        // Act on state
+        // ทำพฤติกรรมตาม state
         switch (currentState)
         {
             case EnemyState.Idle:
@@ -91,64 +104,72 @@ public class EnemyAIWithState : NetworkBehaviour
                 break;
 
             case EnemyState.Chase:
-                rb.velocity = dir * speed;
-                Face(dir);
+                rb.velocity = dirToBase * speed;
+                Face(dirToBase);
                 break;
 
             case EnemyState.AttackWall:
-                HandleAttackWall(nearestWall, dir);
+                HandleAttackWall(nearestWall, dirToBase);
                 break;
 
             case EnemyState.AttackBase:
-                HandleAttackBase(dir, dist);
+                HandleAttackBase(dirToBase);
                 break;
         }
     }
 
-    void Face(Vector2 dir)
+    private void Face(Vector2 dir)
     {
         if (dir.sqrMagnitude < 0.001f) return;
         float ang = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, ang);
+        transform.rotation = Quaternion.Euler(0f, 0f, ang);
     }
 
-    void HandleAttackWall(RaycastHit2D wallHit, Vector2 dir)
+    private void HandleAttackWall(RaycastHit2D wallHit, Vector2 dir)
     {
         fireCooldown -= Time.deltaTime;
         rb.velocity = Vector2.zero;
-
         if (fireCooldown <= 0f)
         {
             fireCooldown = 1f / fireRate;
-            Vector2 shootDir = (wallHit.point - (Vector2)firePoint.position).normalized;
+            Vector2 shootDir = ((Vector2)wallHit.point - (Vector2)firePoint.position).normalized;
             Face(shootDir);
-
-            var bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
-            var netObj = bullet.GetComponent<NetworkObject>();
-            netObj.Spawn();  // replicate bullet to all clients
-
-            if (bullet.TryGetComponent<Rigidbody2D>(out var rbB))
+            var b = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+            var netObj = b.GetComponent<NetworkObject>();
+            netObj.Spawn();
+            if (b.TryGetComponent<Rigidbody2D>(out var rbB))
                 rbB.velocity = shootDir * bulletSpeed;
         }
     }
 
-    void HandleAttackBase(Vector2 dir, float dist)
+    private void HandleAttackBase(Vector2 dir)
     {
         fireCooldown -= Time.deltaTime;
         rb.velocity = Vector2.zero;
-
-        // Only shoot if within attackDistance
-        if (fireCooldown <= 0f && dist <= attackDistance)
+        if (fireCooldown <= 0f)
         {
             fireCooldown = 1f / fireRate;
             Face(dir);
-
-            var bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
-            var netObj = bullet.GetComponent<NetworkObject>();
+            var b = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+            var netObj = b.GetComponent<NetworkObject>();
             netObj.Spawn();
-
-            if (bullet.TryGetComponent<Rigidbody2D>(out var rbB))
+            if (b.TryGetComponent<Rigidbody2D>(out var rbB))
                 rbB.velocity = dir * bulletSpeed;
+        }
+    }
+
+    private void ChooseNearestBase()
+    {
+        float minD = float.MaxValue;
+        Vector2 pos = rb.position;
+        foreach (var t in baseTargets)
+        {
+            float d = Vector2.Distance(pos, t.position);
+            if (d < minD)
+            {
+                minD = d;
+                currentTarget = t;
+            }
         }
     }
 }
